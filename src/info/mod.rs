@@ -7,3 +7,4 @@ pub mod chassis;
 pub mod network;
 pub mod monitor;
 pub mod gpu;
+pub mod advanced;

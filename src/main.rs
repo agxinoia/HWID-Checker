@@ -53,9 +53,16 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     KeyCode::Down | KeyCode::Char('j') => app.next_tab(),
                     KeyCode::Left | KeyCode::Char('h') => app.scroll_up(),
                     KeyCode::Right | KeyCode::Char('l') => app.scroll_down(),
+                    KeyCode::Char('a') | KeyCode::Char('A') => {
+                        app.goto_advanced();
+                        app.set_status("Advanced mode - Serial comparison & spoofing advice".to_string());
+                    }
                     KeyCode::Tab => {
                         match app.export_serials() {
-                            Ok(filename) => app.set_status(format!("Exported to {}", filename)),
+                            Ok(filename) => {
+                                app.set_status(format!("Exported to {}", filename));
+                                app.reload_previous_serials();
+                            }
                             Err(e) => app.set_status(format!("Export failed: {}", e)),
                         }
                     }

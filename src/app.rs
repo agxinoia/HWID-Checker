@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Write;
 
 use crate::info::{
@@ -11,6 +11,7 @@ use crate::info::{
     network::NetworkInfo,
     monitor::MonitorInfo,
     gpu::GpuInfo,
+    advanced::{LockedMotherboardInfo, PreviousSerials, generate_spoofing_advice, SpoofingAdvice},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -24,6 +25,7 @@ pub enum Tab {
     Network,
     Monitor,
     Gpu,
+    Advanced,
 }
 
 impl Tab {
@@ -38,6 +40,7 @@ impl Tab {
             Tab::Network,
             Tab::Monitor,
             Tab::Gpu,
+            Tab::Advanced,
         ]
     }
 
@@ -52,6 +55,7 @@ impl Tab {
             Tab::Network => "Network",
             Tab::Monitor => "Monitor",
             Tab::Gpu => "GPU",
+            Tab::Advanced => "Advanced",
         }
     }
 
@@ -66,6 +70,7 @@ impl Tab {
             Tab::Network => "🌐",
             Tab::Monitor => "🖥️",
             Tab::Gpu => "🎮",
+            Tab::Advanced => "🔬",
         }
     }
 }
@@ -83,10 +88,18 @@ pub struct App {
     pub network_info: NetworkInfo,
     pub monitor_info: MonitorInfo,
     pub gpu_info: GpuInfo,
+    // Advanced mode fields
+    pub locked_info: LockedMotherboardInfo,
+    pub previous_serials: Option<PreviousSerials>,
+    pub spoofing_advice: Vec<SpoofingAdvice>,
 }
 
 impl App {
     pub fn new() -> Self {
+        let locked_info = LockedMotherboardInfo::detect();
+        let spoofing_advice = generate_spoofing_advice(&locked_info);
+        let previous_serials = Self::load_previous_serials();
+        
         Self {
             current_tab: 0,
             scroll_offset: 0,
@@ -100,6 +113,30 @@ impl App {
             network_info: NetworkInfo::collect(),
             monitor_info: MonitorInfo::collect(),
             gpu_info: GpuInfo::collect(),
+            locked_info,
+            previous_serials,
+            spoofing_advice,
+        }
+    }
+    
+    /// Load previous serials from export file if it exists
+    fn load_previous_serials() -> Option<PreviousSerials> {
+        fs::read_to_string("serials_export.txt")
+            .ok()
+            .map(|content| PreviousSerials::parse(&content))
+    }
+    
+    /// Reload previous serials (call after export)
+    pub fn reload_previous_serials(&mut self) {
+        self.previous_serials = Self::load_previous_serials();
+    }
+    
+    /// Jump to Advanced tab
+    pub fn goto_advanced(&mut self) {
+        // Find the index of Advanced tab
+        if let Some(idx) = Tab::all().iter().position(|t| *t == Tab::Advanced) {
+            self.current_tab = idx;
+            self.scroll_offset = 0;
         }
     }
 
