@@ -22,10 +22,6 @@ Press `A` to access the Advanced tab with:
   - 🟢 Green = Serial unchanged
   - 🔴 Red = Serial changed (shows old value)
   - 🟡 Yellow = New serial (not in previous export)
-- **Spoofing Advice** - Context-aware recommendations based on your system configuration:
-  - EFI-level methods for locked motherboards
-  - Registry/driver methods for unlocked systems
-  - Disk, network, GPU, and monitor spoofing guidance
 
 ## Controls
 

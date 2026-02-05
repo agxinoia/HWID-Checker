@@ -11,7 +11,7 @@ use crate::info::{
     network::NetworkInfo,
     monitor::MonitorInfo,
     gpu::GpuInfo,
-    advanced::{LockedMotherboardInfo, PreviousSerials, generate_spoofing_advice, SpoofingAdvice},
+    advanced::{LockedMotherboardInfo, PreviousSerials},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -91,13 +91,11 @@ pub struct App {
     // Advanced mode fields
     pub locked_info: LockedMotherboardInfo,
     pub previous_serials: Option<PreviousSerials>,
-    pub spoofing_advice: Vec<SpoofingAdvice>,
 }
 
 impl App {
     pub fn new() -> Self {
         let locked_info = LockedMotherboardInfo::detect();
-        let spoofing_advice = generate_spoofing_advice(&locked_info);
         let previous_serials = Self::load_previous_serials();
         
         Self {
@@ -115,7 +113,6 @@ impl App {
             gpu_info: GpuInfo::collect(),
             locked_info,
             previous_serials,
-            spoofing_advice,
         }
     }
     

@@ -38,15 +38,6 @@ pub struct PreviousSerials {
     pub gpu_guids: Vec<String>,
 }
 
-/// Spoofing advice based on system configuration
-#[derive(Debug, Clone)]
-pub struct SpoofingAdvice {
-    pub category: String,
-    pub method: String,
-    pub difficulty: String,
-    pub details: String,
-}
-
 impl LockedMotherboardInfo {
     pub fn detect() -> Self {
         #[cfg(windows)]
@@ -283,94 +274,4 @@ impl PreviousSerials {
             SerialStatus::Changed { old: "(different from previous)".to_string() }
         }
     }
-}
-
-/// Generate spoofing advice based on system configuration
-pub fn generate_spoofing_advice(locked_info: &LockedMotherboardInfo) -> Vec<SpoofingAdvice> {
-    let mut advice = Vec::new();
-
-    // Motherboard/SMBIOS advice
-    if locked_info.overall_locked {
-        advice.push(SpoofingAdvice {
-            category: "SMBIOS/Motherboard".to_string(),
-            method: "EFI-Level Spoofing".to_string(),
-            difficulty: "Advanced".to_string(),
-            details: "Use UEFI shell or EFI module injection. Tools: SmmBackdoor, \
-                      custom EFI drivers. Modify SMBIOS tables at firmware level before \
-                      OS boot. May require disabling Secure Boot first.".to_string(),
-        });
-
-        if locked_info.secure_boot_enforced {
-            advice.push(SpoofingAdvice {
-                category: "Secure Boot".to_string(),
-                method: "Disable in BIOS".to_string(),
-                difficulty: "Easy".to_string(),
-                details: "Enter BIOS setup (DEL/F2), navigate to Security/Boot settings, \
-                          disable Secure Boot. Required before EFI modifications. Some OEM \
-                          systems may require BIOS password.".to_string(),
-            });
-        }
-
-        if locked_info.tpm_locked {
-            advice.push(SpoofingAdvice {
-                category: "TPM".to_string(),
-                method: "TPM Clear/Reset".to_string(),
-                difficulty: "Medium".to_string(),
-                details: "Clear TPM from BIOS or Windows Security settings. Note: This \
-                          will remove all TPM-protected keys including BitLocker. Back up \
-                          recovery keys first. Some games use TPM for hardware attestation.".to_string(),
-            });
-        }
-    } else {
-        advice.push(SpoofingAdvice {
-            category: "SMBIOS/Motherboard".to_string(),
-            method: "Registry + Driver Spoofing".to_string(),
-            difficulty: "Medium".to_string(),
-            details: "Modify HKLM\\HARDWARE\\DESCRIPTION\\System\\BIOS values. Use WMI \
-                      provider hooks or kernel drivers to intercept queries. Tools: \
-                      Custom kernel drivers, WMI hooks.".to_string(),
-        });
-    }
-
-    // Disk serial advice
-    advice.push(SpoofingAdvice {
-        category: "Disk Serials".to_string(),
-        method: "IOCTL Hooking / Firmware".to_string(),
-        difficulty: "Advanced".to_string(),
-        details: "Hook IOCTL_STORAGE_QUERY_PROPERTY and SMART_RCV_DRIVE_DATA in kernel \
-                  driver. For persistent changes: some SSDs have firmware tools to \
-                  modify serial. NVMe drives may use vendor-specific commands.".to_string(),
-    });
-
-    // Network MAC advice
-    advice.push(SpoofingAdvice {
-        category: "Network MAC".to_string(),
-        method: "Registry / Driver Level".to_string(),
-        difficulty: "Easy".to_string(),
-        details: "Registry: HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972...}\\000X \
-                  Add NetworkAddress string with new MAC (no colons). Or use Device Manager \
-                  > Network Adapter > Advanced > Locally Administered Address.".to_string(),
-    });
-
-    // GPU advice
-    advice.push(SpoofingAdvice {
-        category: "GPU GUID".to_string(),
-        method: "Registry Modification".to_string(),
-        difficulty: "Medium".to_string(),
-        details: "Modify HKLM\\SYSTEM\\CurrentControlSet\\Enum\\PCI entries for GPU. \
-                  Some anti-cheats read GPU info via DXGI/DirectX - may need API hooks. \
-                  NVIDIA/AMD driver reinstall generates new GUIDs.".to_string(),
-    });
-
-    // Monitor advice
-    advice.push(SpoofingAdvice {
-        category: "Monitor Serial".to_string(),
-        method: "EDID Spoofing".to_string(),
-        difficulty: "Advanced".to_string(),
-        details: "Intercept EDID data from monitor. Tools: Custom display drivers, \
-                  EDID override in registry. Path: HKLM\\SYSTEM\\CurrentControlSet\\\
-                  Enum\\DISPLAY\\<Monitor>\\<ID>\\Device Parameters\\EDID_OVERRIDE".to_string(),
-    });
-
-    advice
 }

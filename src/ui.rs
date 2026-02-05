@@ -590,38 +590,5 @@ fn format_advanced_info(app: &crate::app::App) -> Text<'static> {
         ]));
     }
     
-    // === SPOOFING ADVICE ===
-    lines.push(Line::from(""));
-    lines.push(Line::from(vec![
-        Span::styled("═══ SPOOFING ADVICE ═══", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-    ]));
-    lines.push(Line::from(""));
-    
-    for advice in &app.spoofing_advice {
-        let difficulty_style = match advice.difficulty.as_str() {
-            "Easy" => Style::default().fg(Color::Green),
-            "Medium" => Style::default().fg(Color::Yellow),
-            "Advanced" => Style::default().fg(Color::Red),
-            _ => Style::default().fg(Color::White),
-        };
-        
-        lines.push(Line::from(vec![
-            Span::styled(format!("▸ {}", advice.category), Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD)),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("  Method:     ", Style::default().fg(Color::Yellow)),
-            Span::styled(advice.method.clone(), Style::default().fg(Color::White)),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("  Difficulty: ", Style::default().fg(Color::Yellow)),
-            Span::styled(advice.difficulty.clone(), difficulty_style),
-        ]));
-        lines.push(Line::from(vec![
-            Span::styled("  Details:    ", Style::default().fg(Color::Yellow)),
-            Span::styled(advice.details.clone(), Style::default().fg(Color::DarkGray)),
-        ]));
-        lines.push(Line::from(""));
-    }
-    
     Text::from(lines)
 }
